@@ -89,9 +89,11 @@ export default class WdkManager {
      */
     getFeeRates(blockchain: string): Promise<FeeRates>;
     /**
-     * Disposes and unregisters all the wallets, erasing any sensitive data from the memory.
-     */
-    dispose(): void;
+    * Disposes and unregisters wallets, erasing any sensitive data from memory.
+    * If no blockchains are specified, all registered wallets are disposed.
+    * @param {string[]} [blockchains] - The blockchains to dispose. If omitted, all wallets are disposed.
+    */
+    dispose(blockchains?: string[]): void;
     /** @private */
     private _runMiddlewares;
     /** @private */

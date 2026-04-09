@@ -427,12 +427,55 @@ describe('WdkManager', () => {
   })
 
   describe('dispose', () => {
-    test('should successfully dispose the wallet managers', async () => {
+    beforeEach(() => {
+      disposeMock.mockClear()
+    })
+
+    test('should dispose all wallets when called without arguments', () => {
       wdkManager.registerWallet('ethereum', WalletManagerMock, CONFIG)
+      wdkManager.registerWallet('bitcoin', WalletManagerMock, CONFIG)
 
       wdkManager.dispose()
 
-      expect(disposeMock).toHaveBeenCalled()
+      expect(disposeMock).toHaveBeenCalledTimes(2)
+    })
+
+    test('should dispose only the specified wallets', () => {
+      wdkManager.registerWallet('ethereum', WalletManagerMock, CONFIG)
+      wdkManager.registerWallet('bitcoin', WalletManagerMock, CONFIG)
+
+      wdkManager.dispose(['ethereum'])
+
+      expect(disposeMock).toHaveBeenCalledTimes(1)
+    })
+
+    test('should unregister the wallet after disposal', async () => {
+      wdkManager.registerWallet('ethereum', WalletManagerMock, CONFIG)
+
+      wdkManager.dispose(['ethereum'])
+
+      await expect(wdkManager.getAccount('ethereum', 0))
+        .rejects.toThrow('No wallet registered for blockchain: ethereum.')
+    })
+
+    test('should not affect wallets not in the list', async () => {
+      getAccountMock.mockResolvedValue(DUMMY_ACCOUNT)
+
+      wdkManager.registerWallet('ethereum', WalletManagerMock, CONFIG)
+      wdkManager.registerWallet('bitcoin', WalletManagerMock, CONFIG)
+
+      wdkManager.dispose(['bitcoin'])
+
+      expect(disposeMock).toHaveBeenCalledTimes(1)
+      await expect(wdkManager.getAccount('ethereum', 0)).resolves.toEqual(DUMMY_ACCOUNT)
+    })
+
+    test('should be a no-op when given an empty array', () => {
+      wdkManager.registerWallet('ethereum', WalletManagerMock, CONFIG)
+
+      wdkManager.dispose([])
+
+      expect(disposeMock).not.toHaveBeenCalled()
     })
   })
 })

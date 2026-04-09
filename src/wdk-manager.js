@@ -212,14 +212,17 @@ export default class WDK {
   }
 
   /**
-   * Disposes and unregisters all the wallets, erasing any sensitive data from the memory.
+   * Disposes and unregisters wallets, erasing any sensitive data from memory.
+   * If no blockchains are specified, all registered wallets are disposed.
+   * @param {string[]} [blockchains] - The blockchains to dispose. If omitted, all wallets are disposed.
    */
-  dispose () {
-    for (const [, wallet] of this._wallets) {
-      wallet.dispose()
+  dispose (blockchains) {
+    for (const [blockchain, wallet] of this._wallets) {
+      if (!blockchains || blockchains.includes(blockchain)) {
+        wallet.dispose()
+        this._wallets.delete(blockchain)
+      }
     }
-
-    this._wallets.clear()
   }
 
   /** @private */
